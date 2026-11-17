@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}About MediTrack AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">About MediTrack AI</h1>
+    <p class="page-description">Smart medicine management through technology and biology.</p>
+  </div>
+</div>
+
+<!-- Project Overview Card -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">About the Project</span>
+  </div>
+  <div class="card-body" style="font-size: 0.92rem; line-height: 1.6; color: var(--secondary);">
+    <p style="margin-bottom: 0.75rem;">
+      <strong>MediTrack AI</strong> is an academic college project developed to help individuals and caregivers organize medicines, daily reminders, inventory stock levels, expiration date tracking, dose compliance monitoring, and fundamental drug interaction awareness.
+    </p>
+    <p>
+      The system combines core computer science concepts—relational database modeling, web application architecture, and data visualization—with foundational pharmacological principles like ADME, pharmacokinetics, and receptor interactions to create a practical, student-built health management application.
+    </p>
+  </div>
+</div>
+
+<!-- Problem & Solution Grid -->
+<div class="form-grid" style="margin-bottom: 1.5rem;">
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-header">
+      <span class="card-title">The Problem</span>
+    </div>
+    <div class="card-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--secondary);">
+      In everyday healthcare and chronic disease management, patients encounter several practical hurdles:
+      <ul style="padding-left: 1.25rem; margin-top: 0.5rem;">
+        <li><strong>Forgetting schedules:</strong> Missed doses jeopardize steady-state drug concentration.</li>
+        <li><strong>Inventory stockouts:</strong> Running out of essential medications without advance warning.</li>
+        <li><strong>Expired medicines:</strong> Inadvertently taking expired medicines with degraded potency or toxicity.</li>
+        <li><strong>Scattered medication records:</strong> Difficulties tracking regimens across multiple doctors.</li>
+        <li><strong>Lack of adherence records:</strong> Inability to quantitatively demonstrate treatment compliance to physicians.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-header">
+      <span class="card-title">The Solution</span>
+    </div>
+    <div class="card-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--secondary);">
+      MediTrack AI addresses each of these challenges systematically:
+      <ul style="padding-left: 1.25rem; margin-top: 0.5rem;">
+        <li><strong>Automated Daily Schedule:</strong> Aggregates all active medications into a chronological daily timeline.</li>
+        <li><strong>Real-time Expiry & Low-Stock Alerts:</strong> Dynamic status badges (Expiring Soon, Low Stock, Expired).</li>
+        <li><strong>One-Click Dose Logging:</strong> Seamless intake logging that decrements stock and prevents duplicates.</li>
+        <li><strong>Adherence Analytics:</strong> Clean visual charts tracking compliance rates over time.</li>
+        <li><strong>Educational Safety Checker:</strong> Proactive identification of contraindicated substance combinations.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Dual Academic Foundations -->
+<div class="form-grid" style="margin-bottom: 1.5rem;">
+  <!-- Computer Science Component -->
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-header">
+      <span class="card-title">Computer Science Component</span>
+      <span class="badge badge-primary">Engineering</span>
+    </div>
+    <div class="card-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--secondary);">
+      The software implementation showcases foundational full-stack software engineering practices:
+      <ul style="padding-left: 1.25rem; margin-top: 0.5rem;">
+        <li><strong>Backend Framework:</strong> Python 3 with Flask micro-framework and Jinja2 templating.</li>
+        <li><strong>Relational Database:</strong> SQLite with SQLAlchemy ORM modeling one-to-many relationships (Medicine to DoseLogs) and cascading rules.</li>
+        <li><strong>CRUD Operations:</strong> Complete Create, Read, Update, and Delete lifecycles for medications.</li>
+        <li><strong>Data Validation & Integrity:</strong> Server-side input sanitization, date boundary checks, and composite unique constraints to prevent duplicate dose logs.</li>
+        <li><strong>Data Visualization:</strong> Dynamic client-side chart generation using Chart.js based on SQL aggregates.</li>
+        <li><strong>Responsive Interface:</strong> Clean, custom CSS layout designed for accessibility across mobile, tablet, and desktop viewports.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Biology Component -->
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-header">
+      <span class="card-title">Biology & Pharmacology Component</span>
+      <span class="badge badge-success">Life Sciences</span>
+    </div>
+    <div class="card-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--secondary);">
+      The domain logic is anchored in established biochemical and pharmacological principles:
+      <ul style="padding-left: 1.25rem; margin-top: 0.5rem;">
+        <li><strong>ADME Paradigm:</strong> Modeling how drugs undergo Administration, Absorption, Distribution, Metabolism, and Excretion.</li>
+        <li><strong>Pharmacokinetics (PK):</strong> Calculating half-life (\(t_{1/2}\)) considerations that dictate daily dosing intervals.</li>
+        <li><strong>Pharmacodynamics (PD):</strong> Receptor-ligand interactions, therapeutic window maintenance, and dose-response dynamics.</li>
+        <li><strong>Drug-Drug Interactions:</strong> Enzymatic pathways (e.g., CYP450 enzyme inhibition), chelation complexes, and additive anticoagulation risks.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Future Improvements & Limitations -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Future Enhancements & Technical Roadmap</span>
+  </div>
+  <div class="card-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--secondary);">
+    While the current prototype successfully demonstrates core functionality, future project expansions could include:
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+      <div>&bull; <strong>Verified Clinical Drug Database:</strong> Integration with official pharmacopeia APIs (e.g., RxNorm, OpenFDA).</div>
+      <div>&bull; <strong>Push Notifications:</strong> Browser Service Workers and SMS/Email reminders for scheduled dose times.</div>
+      <div>&bull; <strong>Multi-User Authentication:</strong> Secure password hashing and role-based access for patients and caregivers.</div>
+      <div>&bull; <strong>Barcode / Package Scanning:</strong> Computer vision or QR scanning for rapid medicine entry.</div>
+      <div>&bull; <strong>Physician Portal:</strong> Exportable adherence audit reports in PDF format for clinical consultations.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Project Limitations and Disclaimer -->
+<div class="card" style="border-left: 4px solid var(--secondary);">
+  <div class="card-header">
+    <span class="card-title">Project Scope & Limitations</span>
+  </div>
+  <div class="card-body" style="font-size: 0.88rem; line-height: 1.6; color: var(--secondary);">
+    <p style="margin-bottom: 0.5rem;">
+      <strong>Educational Scope:</strong> MediTrack AI is created solely as an academic educational demonstration. The drug interaction dataset is curated for common clinical examples and does not comprise an exhaustive pharmacological reference.
+    </p>
+    <p>
+      <strong>Disclaimer:</strong> This application is not a clinical medical device. It does not provide medical diagnoses, treatment recommendations, or prescriptions. Users must always verify medication regimens with certified physicians and pharmacists.
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics & Adherence{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Medication Adherence Analytics</h1>
+    <p class="page-description">Quantitative analysis of logged doses, scheduled treatment compliance, and daily intake activity.</p>
+  </div>
+  {% if not has_data %}
+    <form action="{{ url_for('seed_demo') }}" method="POST" style="display: inline;">
+      <button type="submit" class="btn btn-sm btn-secondary">Load Demonstration Data</button>
+    </form>
+  {% endif %}
+</div>
+
+<!-- Key Performance Indicators -->
+<div class="metrics-grid">
+  <div class="metric-card metric-primary">
+    <div class="metric-label">Total Logged Doses</div>
+    <div class="metric-value">{{ total_logged }}</div>
+    <div class="metric-subtitle">Recorded in database</div>
+  </div>
+
+  <div class="metric-card metric-success">
+    <div class="metric-label">Doses Taken</div>
+    <div class="metric-value">{{ taken_count }}</div>
+    <div class="metric-subtitle">Successfully administered</div>
+  </div>
+
+  <div class="metric-card {% if missed_count > 0 %}metric-danger{% endif %}">
+    <div class="metric-label">Missed Doses</div>
+    <div class="metric-value">{{ missed_count }}</div>
+    <div class="metric-subtitle">Omitted or skipped</div>
+  </div>
+
+  <div class="metric-card metric-success">
+    <div class="metric-label">Overall Adherence</div>
+    <div class="metric-value">{{ adherence_rate }}%</div>
+    <div class="metric-subtitle">Compliance percentage</div>
+  </div>
+</div>
+
+{% if has_data %}
+  <!-- Charts Row -->
+  <div class="charts-grid">
+    <!-- Adherence Doughnut -->
+    <div class="chart-card">
+      <div class="chart-title">Adherence Rate Distribution</div>
+      <div class="chart-canvas-wrapper">
+        <canvas id="adherenceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Doses by Medicine Bar Chart -->
+    <div class="chart-card">
+      <div class="chart-title">Doses Taken by Medicine</div>
+      <div class="chart-canvas-wrapper">
+        <canvas id="medicineDosesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Daily Activity Line Chart (Last 7 Days) -->
+    <div class="chart-card" style="grid-column: 1 / -1;">
+      <div class="chart-title">Daily Activity &bull; Doses Taken (Last 7 Days)</div>
+      <div class="chart-canvas-wrapper" style="height: 240px;">
+        <canvas id="dailyActivityChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clinical Adherence Interpretation Note -->
+  <div class="card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+      <span class="card-title">Understanding Adherence Metrics</span>
+    </div>
+    <div class="card-body" style="font-size: 0.88rem; color: var(--secondary); line-height: 1.5;">
+      In clinical pharmacology and chronic disease management, an adherence rate &ge; 80% is conventionally regarded as optimal compliance to achieve therapeutic steady-state concentrations and prevent therapeutic failure. Lower adherence rates correlate with increased risks of disease progression, rebound symptoms, and secondary complications.
+    </div>
+  </div>
+
+{% else %}
+  <!-- Friendly Empty State -->
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-state-title">No Dose Data Available Yet</div>
+      <p class="empty-state-desc">
+        There are currently no recorded intake logs in the database. When you mark scheduled doses as "Taken" on the Dashboard or Reminders page, adherence graphs and statistics will automatically render here.
+      </p>
+      <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('reminders') }}" class="btn btn-primary">Go to Today's Reminders</a>
+        <form action="{{ url_for('seed_demo') }}" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-secondary">Load Demonstration Sample Data</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    {% if has_data %}
+      const data = {{ chart_data | tojson }};
+      initAnalyticsCharts(data);
+    {% endif %}
+  });
+</script>
+{% endblock %}

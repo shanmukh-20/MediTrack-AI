@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Biology of Medicines{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">The Biology of Medicines</h1>
+    <p class="page-description">An educational guide to how medications interact with biological systems: ADME, Pharmacokinetics, Pharmacodynamics, and Receptor Mechanisms.</p>
+  </div>
+</div>
+
+<!-- Visual Drug Journey -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">The Drug Journey: How Medicines Move Through the Body</span>
+  </div>
+  <div class="card-body">
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+      From ingestion to elimination, a drug undergoes a precise biological sequence known as <strong>ADME</strong>.
+    </p>
+
+    <div class="journey-container">
+      <div class="journey-step">
+        <div class="journey-step-number">Step 1</div>
+        <div class="journey-step-title">Administration</div>
+        <div class="journey-step-desc">
+          The route by which the drug enters the body: oral (tablets, syrups), parenteral (intravenous, intramuscular), topical, or inhalation.
+        </div>
+      </div>
+
+      <div class="journey-step">
+        <div class="journey-step-number">Step 2</div>
+        <div class="journey-step-title">Absorption</div>
+        <div class="journey-step-desc">
+          The passage of drug molecules across biological membranes (e.g., gastrointestinal mucosal epithelium) into systemic bloodstream circulation.
+        </div>
+      </div>
+
+      <div class="journey-step">
+        <div class="journey-step-number">Step 3</div>
+        <div class="journey-step-title">Distribution</div>
+        <div class="journey-step-desc">
+          Transport via plasma to target organs, tissues, and extracellular fluids, influenced by blood flow, lipid solubility, and plasma protein binding.
+        </div>
+      </div>
+
+      <div class="journey-step">
+        <div class="journey-step-number">Step 4</div>
+        <div class="journey-step-title">Metabolism</div>
+        <div class="journey-step-desc">
+          Enzymatic biotransformation, primarily in hepatocytes via Cytochrome P450 (CYP450) enzymes, converting the drug into active or excretable polar metabolites.
+        </div>
+      </div>
+
+      <div class="journey-step">
+        <div class="journey-step-number">Step 5</div>
+        <div class="journey-step-title">Excretion</div>
+        <div class="journey-step-desc">
+          Irreversible clearance of drug and metabolites from the body, chiefly via renal filtration into urine, biliary secretion into feces, or pulmonary exhalation.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pharmacokinetics vs Pharmacodynamics -->
+<div class="form-grid" style="margin-bottom: 1.5rem;">
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-header">
+      <span class="card-title">1. Pharmacokinetics (PK)</span>
+      <span class="badge badge-info">What the Body Does to the Drug</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+        Pharmacokinetics describes the quantitative time-course of drug absorption, distribution, metabolism, and elimination.
+      </p>
+      <ul style="padding-left: 1.25rem; font-size: 0.88rem; color: var(--secondary); line-height: 1.6;">
+        <li><strong>Bioavailability (F):</strong> The fraction of administered dose reaching systemic circulation unchanged (100% for IV injections; variable for oral tablets due to first-pass hepatic metabolism).</li>
+        <li><strong>Volume of Distribution (V<sub>d</sub>):</strong> Theoretical fluid volume required to contain the total drug amount at the plasma concentration.</li>
+        <li><strong>Half-Life (t<sub>1/2</sub>):</strong> Time taken for the plasma drug concentration to decrease by 50%. Determines reminder frequency (e.g., once daily vs. twice daily).</li>
+        <li><strong>Clearance (CL):</strong> The volume of biological fluid completely cleared of drug per unit time, driven by kidney and liver function.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 0;">
+    <div class="card-header">
+      <span class="card-title">2. Pharmacodynamics (PD)</span>
+      <span class="badge badge-success">What the Drug Does to the Body</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+        Pharmacodynamics investigates the biochemical and physiological effects of drugs and their underlying molecular mechanisms of action.
+      </p>
+      <ul style="padding-left: 1.25rem; font-size: 0.88rem; color: var(--secondary); line-height: 1.6;">
+        <li><strong>Dose-Response Relationship:</strong> As drug concentration increases at target sites, the physiological response intensifies until saturation.</li>
+        <li><strong>Therapeutic Window:</strong> The range of plasma concentrations between the minimum effective concentration (MEC) and the minimum toxic concentration (MTC).</li>
+        <li><strong>Efficacy & Potency:</strong> Efficacy represents maximal physiological response produced; potency describes the dose required to produce 50% of maximal response (ED<sub>50</sub>).</li>
+        <li><strong>Receptor Selectivity:</strong> Ability of a drug to bind specifically to intended molecular targets with minimal off-target adverse effects.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Drug-Receptor Interactions -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Drug-Receptor Interactions & Cellular Signaling</span>
+  </div>
+  <div class="card-body">
+    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+      Most medicines exert therapeutic action by binding with high affinity and selectivity to macromolecular biological targets, predominantly protein receptors on cell surfaces or inside cytoplasm.
+    </p>
+
+    <div class="form-grid">
+      <div style="background-color: #fafbfc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem;">
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Agonists vs. Antagonists</h3>
+        <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
+          <strong>Agonists</strong> bind to receptor active sites and trigger conformational changes that activate downstream intracellular signaling cascades (e.g., salbutamol activating &beta;<sub>2</sub> receptors to dilate bronchioles).<br><br>
+          <strong>Antagonists</strong> bind to receptors without activating them, physically blocking endogenous ligands or other drugs from binding (e.g., lisinopril blocking angiotensin receptors or ACE).
+        </p>
+      </div>
+
+      <div style="background-color: #fafbfc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem;">
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Enzyme Inhibition & Induction</h3>
+        <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
+          Many medicines alter hepatic enzyme activity. For instance, when a drug acts as a <strong>CYP3A4 inhibitor</strong> (e.g., clarithromycin), it blocks the enzymatic breakdown of co-administered statins (e.g., atorvastatin), causing statin levels to spike to dangerous concentrations in the bloodstream. This is the biological foundation for the Safety Checker's interaction rules.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Why Adherence Matters Biologically -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Why Dosing Schedules & Adherence Matter Biologically</span>
+  </div>
+  <div class="card-body">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+      <div>
+        <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">Maintaining Steady-State Concentration</h4>
+        <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
+          Repeated dosing at consistent intervals ensures plasma drug concentrations remain stably inside the therapeutic window. Skipping doses causes concentrations to drop below the minimum effective concentration (MEC), resulting in treatment failure or bacterial resistance.
+        </p>
+      </div>
+      <div>
+        <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">Preventing Cumulative Toxicity</h4>
+        <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.5;">
+          Taking doses too close together before adequate clearance has elapsed causes drug accumulation, pushing concentrations past the minimum toxic concentration (MTC) and triggering adverse clinical reactions.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

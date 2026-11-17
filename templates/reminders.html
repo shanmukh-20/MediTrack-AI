@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Reminders & Dose Tracking{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reminders & Dose Tracking</h1>
+    <p class="page-description">Daily schedule of medication doses. Record administered doses to maintain adherence records.</p>
+  </div>
+  <div>
+    <span class="badge badge-secondary">{{ current_date.strftime('%A, %B %d, %Y') }}</span>
+  </div>
+</div>
+
+<!-- Summary metrics -->
+<div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+  <div class="metric-card metric-primary">
+    <div class="metric-label">Scheduled Today</div>
+    <div class="metric-value">{{ total_count }}</div>
+    <div class="metric-subtitle">Total doses scheduled</div>
+  </div>
+
+  <div class="metric-card metric-success">
+    <div class="metric-label">Taken Today</div>
+    <div class="metric-value">{{ taken_count }}</div>
+    <div class="metric-subtitle">Completed intake events</div>
+  </div>
+
+  <div class="metric-card {% if pending_count > 0 %}metric-alert{% endif %}">
+    <div class="metric-label">Pending Doses</div>
+    <div class="metric-value">{{ pending_count }}</div>
+    <div class="metric-subtitle">Remaining for today</div>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-right: 0.5rem;">Filter Schedule:</span>
+  <div class="filter-pills">
+    <a href="{{ url_for('reminders', status='all') }}" class="filter-pill {% if filter_status == 'all' %}active{% endif %}">All ({{ total_count }})</a>
+    <a href="{{ url_for('reminders', status='pending') }}" class="filter-pill {% if filter_status == 'pending' %}active{% endif %}">Pending ({{ pending_count }})</a>
+    <a href="{{ url_for('reminders', status='taken') }}" class="filter-pill {% if filter_status == 'taken' %}active{% endif %}">Taken ({{ taken_count }})</a>
+  </div>
+</div>
+
+<!-- Schedule List Card -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Today's Dose Schedule</span>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    {% if schedule %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Scheduled Time</th>
+              <th>Medicine</th>
+              <th>Form & Instructions</th>
+              <th>Status</th>
+              <th style="text-align: right; width: 160px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in schedule %}
+              <tr>
+                <td>
+                  <strong style="font-size: 1rem;">{{ item.scheduled_time }}</strong>
+                </td>
+                <td>
+                  <a href="{{ url_for('medicine_detail', med_id=item.medicine_id) }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                    {{ item.medicine_name }}
+                  </a>
+                  {% if item.generic_name %}
+                    <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">{{ item.generic_name }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span>{{ item.strength }} &bull; {{ item.form }}</span>
+                  <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">{{ item.instructions }}</span>
+                </td>
+                <td>
+                  {% if item.is_taken %}
+                    <span class="badge badge-success">Taken</span>
+                  {% elif item.status == 'Missed' %}
+                    <span class="badge badge-danger">Missed</span>
+                  {% else %}
+                    <span class="badge badge-warning">Pending</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: right;">
+                  {% if not item.is_taken %}
+                    <form action="{{ url_for('mark_dose_taken') }}" method="POST" style="display: inline;">
+                      <input type="hidden" name="medicine_id" value="{{ item.medicine_id }}">
+                      <input type="hidden" name="scheduled_time" value="{{ item.scheduled_time }}">
+                      <input type="hidden" name="next" value="reminders">
+                      <button type="submit" class="btn btn-sm btn-success">Mark as Taken</button>
+                    </form>
+                  {% else %}
+                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">&check; Logged</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-title">No Doses Found</div>
+        <p class="empty-state-desc">
+          {% if filter_status != 'all' %}
+            No doses matched the selected filter ({{ filter_status }}).
+          {% else %}
+            No active medicine doses are scheduled for today.
+          {% endif %}
+        </p>
+        {% if filter_status != 'all' %}
+          <a href="{{ url_for('reminders', status='all') }}" class="btn btn-sm btn-secondary">View All Doses</a>
+        {% else %}
+          <a href="{{ url_for('medicine_add') }}" class="btn btn-sm btn-primary">+ Add Medicine Schedule</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="disclaimer-box">
+  <strong>Note on Reminder & Adherence Tracking:</strong>
+  MediTrack AI provides self-monitoring schedules based on the reminder times you configure for each medicine. This system does not recommend dose adjustments or modify your prescribed medication schedule. Consult your physician or pharmacist regarding dosage changes.
+</div>
+{% endblock %}

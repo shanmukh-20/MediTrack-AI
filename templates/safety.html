@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Safety Checker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Safety & Drug Interaction Checker</h1>
+    <p class="page-description">Educational verification tool to detect documented drug-drug interactions and biological conflict mechanisms.</p>
+  </div>
+</div>
+
+<!-- Primary Medical Disclaimer Banner -->
+<div class="disclaimer-box" style="margin-top: 0; margin-bottom: 1.5rem; border-left-color: #dc2626; background-color: #fef2f2;">
+  <strong style="color: #991b1b;">Educational Prototype Disclaimer:</strong>
+  This is an educational prototype using a limited interaction knowledge base. It is not a substitute for professional medical advice. Always consult a qualified physician or licensed pharmacist before making any medical decisions.
+</div>
+
+<div class="detail-grid">
+  <!-- Left column: Search / Input form -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Select or Enter Medications to Check</span>
+      </div>
+      <div class="card-body">
+        <form action="{{ url_for('safety_checker') }}" method="POST">
+          
+          {% if user_medicines %}
+            <div class="form-group">
+              <label class="form-label">Check From Your Registered Inventory:</label>
+              <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; background-color: #fafbfc;">
+                {% for med in user_medicines %}
+                  <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; font-size: 0.88rem; cursor: pointer;">
+                    <input type="checkbox" name="medicines" value="{{ med.name }}" class="safety-med-checkbox" {% if med.name in selected_medicines %}checked{% endif %}>
+                    <span><strong>{{ med.name }}</strong> ({{ med.generic_name or med.strength }})</span>
+                  </label>
+                {% endfor %}
+              </div>
+              <div class="form-hint">Select two or more medications from your inventory.</div>
+            </div>
+          {% endif %}
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label" for="custom_medicines">Or Enter Drug Names Manually:</label>
+            <input type="text" id="custom_medicines" name="custom_medicines" class="form-control" placeholder="e.g., Aspirin, Warfarin, Metformin, Alcohol" value="{% if selected_medicines %}{{ selected_medicines|join(', ') }}{% endif %}">
+            <div class="form-hint">Separate multiple medicine names with commas.</div>
+          </div>
+
+          <!-- Quick Test Pairs for College Demonstration -->
+          <div style="margin-bottom: 1.25rem;">
+            <span style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Sample Test Pairs for Demonstration:</span>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.35rem;">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('custom_medicines').value='Aspirin, Warfarin';">Aspirin + Warfarin</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('custom_medicines').value='Paracetamol, Alcohol';">Paracetamol + Alcohol</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('custom_medicines').value='Atorvastatin, Clarithromycin';">Atorvastatin + Clarithromycin</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('custom_medicines').value='Lisinopril, Potassium Chloride';">Lisinopril + Potassium</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('custom_medicines').value='Metformin, Lisinopril';">Metformin + Lisinopril</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Check Interaction</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Interaction Results Display -->
+    {% if check_results is not none %}
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Analysis Results</span>
+          <span class="badge {% if check_results.interaction_count > 0 %}badge-danger{% else %}badge-success{% endif %}">
+            {{ check_results.interaction_count }} Interaction(s) Found
+          </span>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom: 1rem; font-size: 0.88rem; color: var(--text-muted);">
+            <strong>Checked Substances:</strong> {{ check_results.checked|join(', ') }}
+          </div>
+
+          {% if check_results.interaction_count > 0 %}
+            {% for item in check_results.results %}
+              <div class="interaction-result-card {{ item.severity|lower }}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                  <strong style="font-size: 1rem; color: var(--text-main);">{{ item.title }}</strong>
+                  <span class="badge {% if item.severity == 'Severe' %}badge-danger{% elif item.severity == 'Moderate' %}badge-warning{% else %}badge-info{% endif %}">
+                    {{ item.severity }} Severity
+                  </span>
+                </div>
+                
+                <div style="margin-bottom: 0.6rem;">
+                  <strong style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Biological Mechanism:</strong>
+                  <p style="font-size: 0.9rem; margin-top: 0.2rem; color: var(--text-main);">{{ item.mechanism }}</p>
+                </div>
+
+                <div>
+                  <strong style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Practical Safety Guidance:</strong>
+                  <p style="font-size: 0.88rem; margin-top: 0.2rem; color: var(--secondary);">{{ item.management }}</p>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div style="padding: 1.5rem; text-align: center; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; color: #166534; font-size: 1rem; margin-bottom: 0.25rem;">
+                No Known Interaction Found in the Available Educational Dataset
+              </div>
+              <p style="font-size: 0.85rem; color: #15803d; max-width: 520px; margin: 0 auto;">
+                No documented conflict was detected among the specified medications within this project's demonstration database. Note: this result does not medically guarantee safety, as clinical interaction databases contain thousands of compounds. Always verify with your healthcare provider.
+              </p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right column: Knowledge Base & Educational Notes -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Educational Scope</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size: 0.88rem; color: var(--text-main); margin-bottom: 0.75rem;">
+          Drug-drug interactions occur when the pharmacokinetics (ADME) or pharmacodynamics of one substance are altered by another.
+        </p>
+        <ul style="padding-left: 1.25rem; font-size: 0.85rem; color: var(--secondary); margin-bottom: 1rem; line-height: 1.6;">
+          <li><strong>Enzyme Inhibition/Induction:</strong> e.g., CYP3A4, CYP2C19 liver enzymes affecting metabolism rate.</li>
+          <li><strong>Competitive Binding:</strong> Direct competition for receptor active sites or plasma proteins.</li>
+          <li><strong>Synergistic Toxicity:</strong> Multiple agents acting on the same physiological pathway (e.g., dual anticoagulation).</li>
+          <li><strong>Chelation & Absorption:</strong> Insoluble complex formation preventing intestinal uptake.</li>
+        </ul>
+        <a href="{{ url_for('biology') }}" class="btn btn-sm btn-secondary btn-block">Read Biology & Pharmacology Guide</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Included Reference Substances</span>
+      </div>
+      <div class="card-body" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+        The current educational knowledge base includes clinical documentation for:
+        <div style="display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.5rem;">
+          <span class="badge badge-secondary">Aspirin</span>
+          <span class="badge badge-secondary">Warfarin</span>
+          <span class="badge badge-secondary">Paracetamol</span>
+          <span class="badge badge-secondary">Ibuprofen</span>
+          <span class="badge badge-secondary">Alcohol</span>
+          <span class="badge badge-secondary">Ciprofloxacin</span>
+          <span class="badge badge-secondary">Calcium Carbonate</span>
+          <span class="badge badge-secondary">Lisinopril</span>
+          <span class="badge badge-secondary">Potassium</span>
+          <span class="badge badge-secondary">Atorvastatin</span>
+          <span class="badge badge-secondary">Clarithromycin</span>
+          <span class="badge badge-secondary">Metformin</span>
+          <span class="badge badge-secondary">Omeprazole</span>
+          <span class="badge badge-secondary">Clopidogrel</span>
+          <span class="badge badge-secondary">Sertraline</span>
+          <span class="badge badge-secondary">Tramadol</span>
+          <span class="badge badge-secondary">Amoxicillin</span>
+          <span class="badge badge-secondary">Methotrexate</span>
+          <span class="badge badge-secondary">Levothyroxine</span>
+          <span class="badge badge-secondary">Digoxin</span>
+          <span class="badge badge-secondary">Amiodarone</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

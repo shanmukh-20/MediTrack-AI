@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ medicine.name }} - Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ medicine.name }}</h1>
+    <p class="page-description">Detailed medication profile, dosage schedules, stock status, and logged administration history.</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{{ url_for('medicine_edit', med_id=medicine.id) }}" class="btn btn-secondary">Edit</a>
+    <form action="{{ url_for('medicine_delete', med_id=medicine.id) }}" method="POST" onsubmit="return confirm('Delete this medicine? This action cannot be undone.');" style="display: inline;">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+    <a href="{{ url_for('medicines_list') }}" class="btn btn-secondary">All Medicines</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <!-- Left column: Primary Specifications -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Medication Overview</span>
+        <span class="badge {{ medicine.status_badge_class }}">{{ medicine.status_label }}</span>
+      </div>
+      <div class="card-body">
+        <ul class="info-list">
+          <li class="info-item">
+            <span class="info-label">Brand Name:</span>
+            <span class="info-value"><strong>{{ medicine.name }}</strong></span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Generic / Molecule:</span>
+            <span class="info-value">{{ medicine.generic_name or 'Not specified' }}</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Strength & Form:</span>
+            <span class="info-value">{{ medicine.strength }} &bull; {{ medicine.form }}</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Medical Purpose:</span>
+            <span class="info-value">{{ medicine.purpose or 'Not specified' }}</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Instructions:</span>
+            <span class="info-value">{{ medicine.instructions or 'Take as prescribed.' }}</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Prescribed Frequency:</span>
+            <span class="info-value">{{ medicine.frequency }}</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Daily Reminder Time(s):</span>
+            <span class="info-value"><strong>{{ medicine.reminder_time }}</strong></span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Duration:</span>
+            <span class="info-value">
+              From {{ medicine.start_date.strftime('%b %d, %Y') }}
+              {% if medicine.end_date %}
+                to {{ medicine.end_date.strftime('%b %d, %Y') }}
+              {% else %}
+                (Ongoing treatment)
+              {% endif %}
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Recent Dose History for this medicine -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Dose History (Recent Records)</span>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        {% if dose_history %}
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Scheduled Time</th>
+                  <th>Recorded At</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in dose_history %}
+                  <tr>
+                    <td>{{ log.log_date.strftime('%b %d, %Y') }}</td>
+                    <td><strong>{{ log.scheduled_time }}</strong></td>
+                    <td>
+                      {% if log.taken_at %}
+                        {{ log.taken_at.strftime('%H:%M UTC') }}
+                      {% else %}
+                        &mdash;
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if log.status == 'Taken' %}
+                        <span class="badge badge-success">Taken</span>
+                      {% else %}
+                        <span class="badge badge-danger">Missed</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding: 2rem 1rem;">
+            <div class="empty-state-title">No Dose Logs Yet</div>
+            <p class="empty-state-desc">No intake events have been recorded for this medication yet.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column: Stock & Expiry Status -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Inventory & Expiry</span>
+      </div>
+      <div class="card-body">
+        <div style="margin-bottom: 1.25rem;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Current Stock</div>
+          <div style="font-size: 2rem; font-weight: 700; color: {% if medicine.is_low_stock %}var(--status-danger-text){% else %}var(--text-main){% endif %};">
+            {{ medicine.quantity }} <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">units</span>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Low stock threshold: {{ medicine.low_stock_threshold }} units
+          </div>
+        </div>
+
+        <div style="padding-top: 1rem; border-top: 1px solid var(--border-color);">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Expiration Date</div>
+          <div style="font-size: 1.1rem; font-weight: 600; margin-top: 0.2rem;">
+            {{ medicine.expiry_date.strftime('%B %d, %Y') }}
+          </div>
+          <div style="font-size: 0.85rem; margin-top: 0.35rem;">
+            {% if medicine.is_expired %}
+              <span class="badge badge-danger">Expired</span>
+            {% elif medicine.is_expiring_soon %}
+              <span class="badge badge-warning">Expiring within 30 days</span>
+            {% else %}
+              <span class="badge badge-success">Valid</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="{{ url_for('medicine_edit', med_id=medicine.id) }}" class="btn btn-sm btn-secondary btn-block">Update Stock / Details</a>
+      </div>
+    </div>
+
+    <!-- Quick Check Interaction -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Interaction Safety</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Verify whether {{ medicine.name }} has known contraindications or interaction pairs with your other medications.
+        </p>
+        <a href="{{ url_for('safety_checker') }}" class="btn btn-sm btn-secondary btn-block">Open Safety Checker</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

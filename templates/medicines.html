@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Medicines{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Medicines Management</h1>
+    <p class="page-description">Manage your medicine inventory, prescribed dosages, expiration dates, and stock thresholds.</p>
+  </div>
+  <div>
+    <a href="{{ url_for('medicine_add') }}" class="btn btn-primary">+ Add Medicine</a>
+  </div>
+</div>
+
+<!-- Search & Status Filter Bar -->
+<div class="filter-bar">
+  <form action="{{ url_for('medicines_list') }}" method="GET" style="display: flex; gap: 0.5rem; flex: 1; min-width: 260px;">
+    <input type="hidden" name="status" value="{{ status_filter }}">
+    <input type="text" name="q" value="{{ query_text }}" placeholder="Search by brand name, generic name, or purpose..." class="form-control" style="font-size: 0.85rem;">
+    <button type="submit" class="btn btn-secondary">Search</button>
+    {% if query_text %}
+      <a href="{{ url_for('medicines_list', status=status_filter) }}" class="btn btn-secondary" title="Clear search">Clear</a>
+    {% endif %}
+  </form>
+
+  <div class="filter-pills">
+    <a href="{{ url_for('medicines_list', status='all', q=query_text) }}" class="filter-pill {% if status_filter == 'all' %}active{% endif %}">All</a>
+    <a href="{{ url_for('medicines_list', status='active', q=query_text) }}" class="filter-pill {% if status_filter == 'active' %}active{% endif %}">Active</a>
+    <a href="{{ url_for('medicines_list', status='expiring_soon', q=query_text) }}" class="filter-pill {% if status_filter == 'expiring_soon' %}active{% endif %}">Expiring Soon</a>
+    <a href="{{ url_for('medicines_list', status='expired', q=query_text) }}" class="filter-pill {% if status_filter == 'expired' %}active{% endif %}">Expired</a>
+    <a href="{{ url_for('medicines_list', status='low_stock', q=query_text) }}" class="filter-pill {% if status_filter == 'low_stock' %}active{% endif %}">Low Stock</a>
+  </div>
+</div>
+
+<!-- Medicines Table Card -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Registered Medicines ({{ total_count }})</span>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    {% if medicines %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Medicine</th>
+              <th>Strength & Form</th>
+              <th>Frequency & Times</th>
+              <th>Stock</th>
+              <th>Expiry Date</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for med in medicines %}
+              <tr>
+                <td>
+                  <strong>{{ med.name }}</strong>
+                  {% if med.generic_name %}
+                    <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">{{ med.generic_name }}</span>
+                  {% endif %}
+                  {% if med.purpose %}
+                    <span style="display: block; font-size: 0.75rem; color: var(--text-light);">{{ med.purpose }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ med.strength }} &bull; {{ med.form }}</td>
+                <td>
+                  <span>{{ med.frequency }}</span>
+                  <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">{{ med.reminder_time }}</span>
+                </td>
+                <td>
+                  <strong>{{ med.quantity }}</strong> units
+                  {% if med.is_low_stock %}
+                    <span style="font-size: 0.75rem; color: var(--status-warning-text); display: block;">Low stock</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span>{{ med.expiry_date.strftime('%b %d, %Y') }}</span>
+                  {% if med.is_expired %}
+                    <span style="font-size: 0.75rem; color: var(--status-danger-text); display: block;">Past expiry</span>
+                  {% elif med.is_expiring_soon %}
+                    <span style="font-size: 0.75rem; color: var(--status-warning-text); display: block;">Within 30 days</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge {{ med.status_badge_class }}">{{ med.status_label }}</span>
+                </td>
+                <td style="text-align: right;">
+                  <div style="display: inline-flex; gap: 0.35rem;">
+                    <a href="{{ url_for('medicine_detail', med_id=med.id) }}" class="btn btn-sm btn-secondary" title="View Details">View</a>
+                    <a href="{{ url_for('medicine_edit', med_id=med.id) }}" class="btn btn-sm btn-secondary" title="Edit Medicine">Edit</a>
+                    <form action="{{ url_for('medicine_delete', med_id=med.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ med.name }}?');" style="display: inline;">
+                      <button type="submit" class="btn btn-sm btn-danger" title="Delete Medicine">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-title">No Medicines Found</div>
+        <p class="empty-state-desc">
+          {% if query_text or status_filter != 'all' %}
+            No medicines matched your current filter or search criteria.
+          {% else %}
+            No medicines currently exist in the database.
+          {% endif %}
+        </p>
+        {% if query_text or status_filter != 'all' %}
+          <a href="{{ url_for('medicines_list') }}" class="btn btn-sm btn-secondary">Reset Filters</a>
+        {% else %}
+          <a href="{{ url_for('medicine_add') }}" class="btn btn-sm btn-primary">+ Add Medicine</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-description">Overview of your medicine inventory, today's schedule, and health management status.</p>
+  </div>
+  <div>
+    <span class="badge badge-secondary">{{ current_date.strftime('%A, %B %d, %Y') }}</span>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions-bar">
+  <a href="{{ url_for('medicine_add') }}" class="btn btn-primary">+ Add Medicine</a>
+  <a href="{{ url_for('medicines_list') }}" class="btn btn-secondary">View Medicines</a>
+  <a href="{{ url_for('reminders') }}" class="btn btn-secondary">View Reminders</a>
+  <a href="{{ url_for('safety_checker') }}" class="btn btn-secondary">Check Interaction</a>
+</div>
+
+<!-- Summary Metrics Cards -->
+<div class="metrics-grid">
+  <div class="metric-card metric-primary">
+    <div class="metric-label">Total Medicines</div>
+    <div class="metric-value">{{ total_medicines }}</div>
+    <div class="metric-subtitle">Registered in inventory</div>
+  </div>
+
+  <div class="metric-card {% if expiring_soon_count > 0 %}metric-alert{% endif %}">
+    <div class="metric-label">Expiring Soon</div>
+    <div class="metric-value">{{ expiring_soon_count }}</div>
+    <div class="metric-subtitle">Within next 30 days</div>
+  </div>
+
+  <div class="metric-card {% if low_stock_count > 0 %}metric-danger{% endif %}">
+    <div class="metric-label">Low Stock</div>
+    <div class="metric-value">{{ low_stock_count }}</div>
+    <div class="metric-subtitle">At or below threshold</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Today's Doses</div>
+    <div class="metric-value">{{ today_taken_count }} / {{ today_doses_count }}</div>
+    <div class="metric-subtitle">Scheduled for today</div>
+  </div>
+
+  <div class="metric-card metric-success">
+    <div class="metric-label">Today's Adherence</div>
+    <div class="metric-value">{{ today_adherence }}%</div>
+    <div class="metric-subtitle">Doses taken as scheduled</div>
+  </div>
+</div>
+
+<!-- Today's Reminders Section -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Today's Reminders</span>
+    <a href="{{ url_for('reminders') }}" class="btn btn-sm btn-secondary">Full Schedule</a>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    {% if today_schedule %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Scheduled Time</th>
+              <th>Medicine</th>
+              <th>Dosage & Instructions</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in today_schedule %}
+              <tr>
+                <td><strong>{{ item.scheduled_time }}</strong></td>
+                <td>
+                  <a href="{{ url_for('medicine_detail', med_id=item.medicine_id) }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                    {{ item.medicine_name }}
+                  </a>
+                  <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">{{ item.generic_name }}</span>
+                </td>
+                <td>
+                  <span>{{ item.strength }} &bull; {{ item.form }}</span>
+                  <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">{{ item.instructions }}</span>
+                </td>
+                <td>
+                  {% if item.is_taken %}
+                    <span class="badge badge-success">Taken</span>
+                  {% elif item.status == 'Missed' %}
+                    <span class="badge badge-danger">Missed</span>
+                  {% else %}
+                    <span class="badge badge-warning">Pending</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: right;">
+                  {% if not item.is_taken %}
+                    <form action="{{ url_for('mark_dose_taken') }}" method="POST" style="display: inline;">
+                      <input type="hidden" name="medicine_id" value="{{ item.medicine_id }}">
+                      <input type="hidden" name="scheduled_time" value="{{ item.scheduled_time }}">
+                      <input type="hidden" name="next" value="dashboard">
+                      <button type="submit" class="btn btn-sm btn-success">Mark as Taken</button>
+                    </form>
+                  {% else %}
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Recorded</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-title">No Doses Scheduled for Today</div>
+        <p class="empty-state-desc">There are no active medicine schedules set for today.</p>
+        <a href="{{ url_for('medicine_add') }}" class="btn btn-sm btn-primary">+ Add a Medicine</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Medicine Status Overview Section -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Medicine Status</span>
+    <a href="{{ url_for('medicines_list') }}" class="btn btn-sm btn-secondary">All Medicines ({{ total_medicines }})</a>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    {% if recent_medicines %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Medicine Name</th>
+              <th>Strength & Form</th>
+              <th>Stock / Quantity</th>
+              <th>Expiry Date</th>
+              <th>Status</th>
+              <th style="text-align: right;">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for med in recent_medicines %}
+              <tr>
+                <td>
+                  <strong>{{ med.name }}</strong>
+                  {% if med.generic_name %}
+                    <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">{{ med.generic_name }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ med.strength }} ({{ med.form }})</td>
+                <td>
+                  <strong>{{ med.quantity }}</strong> units
+                  {% if med.is_low_stock %}
+                    <span style="font-size: 0.75rem; color: var(--status-warning-text); display: block;">Low stock alert</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {{ med.expiry_date.strftime('%b %d, %Y') }}
+                </td>
+                <td>
+                  <span class="badge {{ med.status_badge_class }}">{{ med.status_label }}</span>
+                </td>
+                <td style="text-align: right;">
+                  <a href="{{ url_for('medicine_detail', med_id=med.id) }}" class="btn btn-sm btn-secondary">View</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-title">No Medicines Registered</div>
+        <p class="empty-state-desc">Get started by recording your prescribed medications into the system.</p>
+        <a href="{{ url_for('medicine_add') }}" class="btn btn-sm btn-primary">+ Add First Medicine</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

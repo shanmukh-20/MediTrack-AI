@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Medicines{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-bold mb-0"><i class="fa-solid fa-pills me-2 text-primary"></i>Medicines</h4>
+    <a href="{{ url_for('add_medicine') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i>Add Medicine
+    </a>
+</div>
+
+<!-- Search & Filter bar -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fa-solid fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control border-start-0 ps-0"
+                           placeholder="Search medicines...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="filterForm" class="form-select">
+                    <option value="">All Forms</option>
+                    <option value="Tablet">Tablet</option>
+                    <option value="Capsule">Capsule</option>
+                    <option value="Syrup">Syrup</option>
+                    <option value="Injection">Injection</option>
+                    <option value="Drops">Drops</option>
+                    <option value="Cream">Cream</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filterStatus" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Low Stock">Low Stock</option>
+                    <option value="Expiring Soon">Expiring Soon</option>
+                    <option value="Expired">Expired</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medicines table -->
+<div class="card">
+    <div class="card-body p-0">
+        {% if medicines %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="medicinesTable">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Name</th>
+                        <th>Generic Name</th>
+                        <th>Strength / Form</th>
+                        <th>Quantity</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="medicinesBody">
+                    {% for med in medicines %}
+                    <tr class="medicine-row"
+                        data-name="{{ med.name|lower }}"
+                        data-generic="{{ (med.generic_name or '')|lower }}"
+                        data-form="{{ med.form }}"
+                        data-status="{{ med.status }}">
+                        <td class="ps-3 fw-medium">
+                            <i class="fa-solid fa-capsules text-primary me-1"></i>
+                            <a href="{{ url_for('medicine_detail', id=med.id) }}" class="text-decoration-none text-dark">
+                                {{ med.name }}
+                            </a>
+                        </td>
+                        <td class="text-muted">{{ med.generic_name or '—' }}</td>
+                        <td>
+                            <span class="text-muted">{{ med.strength }}</span>
+                            <span class="badge bg-light text-muted border ms-1" style="font-size:.72rem;">{{ med.form }}</span>
+                        </td>
+                        <td>{{ med.quantity }}</td>
+                        <td class="text-muted">
+                            {{ med.expiry_date.strftime('%b %d, %Y') if med.expiry_date else '—' }}
+                        </td>
+                        <td>
+                            {% set s = med.status %}
+                            {% if s == 'Active' %}
+                                <span class="badge badge-active rounded-pill px-2">Active</span>
+                            {% elif s == 'Low Stock' %}
+                                <span class="badge badge-low-stock rounded-pill px-2">Low Stock</span>
+                            {% elif s == 'Expiring Soon' %}
+                                <span class="badge badge-expiring rounded-pill px-2">Expiring Soon</span>
+                            {% elif s == 'Expired' %}
+                                <span class="badge badge-expired rounded-pill px-2">Expired</span>
+                            {% else %}
+                                <span class="badge badge-completed rounded-pill px-2">{{ s }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('medicine_detail', id=med.id) }}" class="btn btn-outline-secondary" title="View">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_medicine', id=med.id) }}" class="btn btn-outline-primary" title="Edit">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <button class="btn btn-outline-danger delete-btn"
+                                        data-id="{{ med.id }}"
+                                        data-name="{{ med.name }}"
+                                        title="Delete">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Empty state (shown by JS when search yields no results) -->
+        <div id="noResults" class="text-center py-5 text-muted d-none">
+            <i class="fa-solid fa-magnifying-glass fa-2x opacity-30 mb-2"></i>
+            <p class="mb-0">No medicines match your search.</p>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fa-solid fa-box-open fa-3x opacity-20 mb-3"></i>
+            <h6>No Medicines Yet</h6>
+            <p class="text-muted mb-3">Start by adding your first medicine to track.</p>
+            <a href="{{ url_for('add_medicine') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus me-1"></i>Add Medicine
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center pt-4">
+                <i class="fa-solid fa-triangle-exclamation fa-2x text-danger mb-3"></i>
+                <h6 class="fw-bold">Delete Medicine?</h6>
+                <p class="text-muted mb-0" style="font-size:.88rem;">
+                    Are you sure you want to delete <strong id="deleteMedicineName"></strong>?
+                    This cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-sm btn-danger">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live search & filter
+const searchInput  = document.getElementById('searchInput');
+const filterForm   = document.getElementById('filterForm');
+const filterStatus = document.getElementById('filterStatus');
+const rows         = document.querySelectorAll('.medicine-row');
+const noResults    = document.getElementById('noResults');
+
+function applyFilter() {
+    const q      = (searchInput  ? searchInput.value.toLowerCase()  : '');
+    const form   = (filterForm   ? filterForm.value                  : '');
+    const status = (filterStatus ? filterStatus.value                : '');
+    let visible  = 0;
+    rows.forEach(row => {
+        const matchQ = !q      || row.dataset.name.includes(q) || row.dataset.generic.includes(q);
+        const matchF = !form   || row.dataset.form   === form;
+        const matchS = !status || row.dataset.status === status;
+        const show   = matchQ && matchF && matchS;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    if (noResults) noResults.classList.toggle('d-none', visible > 0);
+}
+
+if (searchInput)  searchInput.addEventListener('input',  applyFilter);
+if (filterForm)   filterForm.addEventListener('change',  applyFilter);
+if (filterStatus) filterStatus.addEventListener('change', applyFilter);
+
+// Delete modal
+document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id   = this.dataset.id;
+        const name = this.dataset.name;
+        document.getElementById('deleteMedicineName').textContent = name;
+        document.getElementById('deleteForm').action = '/medicines/' + id + '/delete';
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    });
+});
+</script>
+{% endblock %}

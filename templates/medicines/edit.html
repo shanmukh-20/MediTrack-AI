@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Edit — {{ medicine.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4 gap-2">
+    <a href="{{ url_for('medicine_detail', id=medicine.id) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h4 class="fw-bold mb-0">Edit — {{ medicine.name }}</h4>
+</div>
+
+<div class="card">
+    <div class="card-body p-4">
+        <form method="POST" action="{{ url_for('edit_medicine', id=medicine.id) }}" novalidate id="editMedicineForm">
+            <!-- Basic Info -->
+            <h6 class="section-title mb-3">Basic Information</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Medicine Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" required value="{{ medicine.name }}">
+                    <div class="invalid-feedback">Medicine name is required.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Generic Name</label>
+                    <input type="text" name="generic_name" class="form-control" value="{{ medicine.generic_name or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Strength <span class="text-danger">*</span></label>
+                    <input type="text" name="strength" class="form-control" required value="{{ medicine.strength }}">
+                    <div class="invalid-feedback">Strength is required.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Form <span class="text-danger">*</span></label>
+                    <select name="form" class="form-select" required>
+                        {% for f in ['Tablet','Capsule','Syrup','Injection','Drops','Cream','Other'] %}
+                        <option value="{{ f }}" {% if medicine.form == f %}selected{% endif %}>{{ f }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Frequency <span class="text-danger">*</span></label>
+                    <select name="frequency" class="form-select" required>
+                        {% set freq_options = ['Once Daily','Twice Daily','Three Times Daily','Four Times Daily','As Needed'] %}
+                        {% for freq in freq_options %}
+                        <option value="{{ freq }}" {% if medicine.frequency == freq %}selected{% endif %}>{{ freq }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Purpose / Indication</label>
+                    <input type="text" name="purpose" class="form-control" value="{{ medicine.purpose or '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Special Instructions</label>
+                    <textarea name="instructions" class="form-control" rows="2">{{ medicine.instructions or '' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Reminder Times -->
+            <h6 class="section-title mb-3">Reminder Times</h6>
+            <div class="mb-4">
+                <div id="reminderTimesContainer">
+                    {% set times = medicine.reminder_times.split(',') if medicine.reminder_times else [''] %}
+                    {% for t in times %}
+                    <div class="d-flex gap-2 mb-2 reminder-time-row">
+                        <input type="time" name="reminder_time" class="form-control" style="max-width:160px;" value="{{ t.strip() }}" required>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-time-btn {% if loop.first and loop.last %}d-none{% endif %}">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" id="addTimeBtn" class="btn btn-sm btn-outline-primary mt-1">
+                    <i class="fa-solid fa-plus me-1"></i>Add Another Time
+                </button>
+            </div>
+
+            <!-- Stock & Dates -->
+            <h6 class="section-title mb-3">Stock & Dates</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Quantity <span class="text-danger">*</span></label>
+                    <input type="number" name="quantity" class="form-control" required min="0" value="{{ medicine.quantity }}">
+                    <div class="invalid-feedback">Quantity is required.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Low Stock Threshold</label>
+                    <input type="number" name="low_stock_threshold" class="form-control" min="0" value="{{ medicine.low_stock_threshold or 7 }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Expiry Date <span class="text-danger">*</span></label>
+                    <input type="date" name="expiry_date" class="form-control" required
+                           value="{{ medicine.expiry_date.strftime('%Y-%m-%d') if medicine.expiry_date else '' }}">
+                    <div class="invalid-feedback">Expiry date is required.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Start Date <span class="text-danger">*</span></label>
+                    <input type="date" name="start_date" class="form-control" required
+                           value="{{ medicine.start_date.strftime('%Y-%m-%d') if medicine.start_date else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">End Date</label>
+                    <input type="date" name="end_date" class="form-control"
+                           value="{{ medicine.end_date.strftime('%Y-%m-%d') if medicine.end_date else '' }}">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2 justify-content-end pt-2 border-top">
+                <a href="{{ url_for('medicine_detail', id=medicine.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const form = document.getElementById('editMedicineForm');
+    form.addEventListener('submit', function(e) {
+        if (!form.checkValidity()) { e.preventDefault(); e.stopPropagation(); }
+        form.classList.add('was-validated');
+    });
+})();
+
+document.getElementById('addTimeBtn').addEventListener('click', function() {
+    const container = document.getElementById('reminderTimesContainer');
+    const row = document.createElement('div');
+    row.className = 'd-flex gap-2 mb-2 reminder-time-row';
+    row.innerHTML = '<input type="time" name="reminder_time" class="form-control" style="max-width:160px;" required>' +
+                    '<button type="button" class="btn btn-sm btn-outline-danger remove-time-btn"><i class="fa-solid fa-minus"></i></button>';
+    container.appendChild(row);
+    row.querySelector('.remove-time-btn').addEventListener('click', () => row.remove());
+    updateRemoveButtons();
+});
+
+function updateRemoveButtons() {
+    const rows = document.querySelectorAll('.reminder-time-row');
+    rows.forEach(r => {
+        const btn = r.querySelector('.remove-time-btn');
+        if (btn) btn.classList.toggle('d-none', rows.length === 1);
+    });
+}
+document.querySelectorAll('.remove-time-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.closest('.reminder-time-row').remove();
+        updateRemoveButtons();
+    });
+});
+</script>
+{% endblock %}

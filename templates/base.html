@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MediTrack AI{% endblock %} - Smart Medicine & Health Management System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="{{ url_for('dashboard') }}" class="brand-wrapper">
+        <span class="brand-title">MediTrack AI</span>
+        <span class="brand-subtitle">Smart Medicine & Health Management System</span>
+      </a>
+
+      <nav class="main-nav" aria-label="Main Navigation">
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('medicines_list') }}" class="nav-link {% if request.endpoint in ['medicines_list', 'medicine_add', 'medicine_edit', 'medicine_detail'] %}active{% endif %}">Medicines</a>
+        <a href="{{ url_for('reminders') }}" class="nav-link {% if request.endpoint == 'reminders' %}active{% endif %}">Reminders</a>
+        <a href="{{ url_for('safety_checker') }}" class="nav-link {% if request.endpoint == 'safety_checker' %}active{% endif %}">Safety Checker</a>
+        <a href="{{ url_for('analytics') }}" class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}">Analytics</a>
+        <a href="{{ url_for('biology') }}" class="nav-link {% if request.endpoint == 'biology' %}active{% endif %}">Biology</a>
+        <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+    <!-- Flash Notifications -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alerts-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'error' else 'danger' }}" role="alert">
+              <span>{{ message }}</span>
+              <button type="button" class="alert-close" aria-label="Close">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          MediTrack AI &bull; College Academic Project
+        </div>
+        <div class="footer-links">
+          <a href="{{ url_for('dashboard') }}" class="footer-link">Dashboard</a>
+          <a href="{{ url_for('medicines_list') }}" class="footer-link">Medicines</a>
+          <a href="{{ url_for('reminders') }}" class="footer-link">Reminders</a>
+          <a href="{{ url_for('safety_checker') }}" class="footer-link">Safety Checker</a>
+          <a href="{{ url_for('analytics') }}" class="footer-link">Analytics</a>
+          <a href="{{ url_for('biology') }}" class="footer-link">Biology</a>
+          <a href="{{ url_for('about') }}" class="footer-link">About</a>
+        </div>
+      </div>
+
+      <div class="footer-disclaimer">
+        <strong>Important Disclaimer:</strong> This application is an educational project and is not intended to diagnose, treat, or replace advice from qualified healthcare professionals.
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
